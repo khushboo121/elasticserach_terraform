@@ -1,0 +1,30 @@
+resource "aws_elb" "elasticsearch_elb" {
+  name               = "elasticsearch-elb"
+  availability_zones = ["us-east-1a", "us-east-1b"]
+
+
+  listener {
+    instance_port     = 9200
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:9200/"
+    interval            = 30
+  }
+  instances                   = [aws_instance.elasticsearch_instance[0].id, aws_instance.elasticsearch_instance[1].id,aws_instance.elasticsearch_instance[2].id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+  tags = {
+    Name = "elasticsearch-elb"
+  }
+}
